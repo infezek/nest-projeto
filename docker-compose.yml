@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  nestproject:
+    build:
+      context: .
+    entrypoint: .docker/entrypoint.sh
+    container_name: nestproject
+    restart: always
+    tty: true
+    volumes:
+      - .:/home/node/app
+    ports:
+      - '3000:3000'
+    depends_on:
+      - nestproject-mongo
+    extra_hosts:
+      - 'host.docker.internal:172.17.0.1'
+
+  nestproject-mongo:
+    image: mongo:4.4.5
+    container_name: nestproject-mongo
+    restart: always
+    ports:
+      - '27090:27017'
+    tty: true
+    volumes:
+      - .docker/dbdata:/data/db
+      - .docker/mongo:/docker-entrypoint-initdb.d
+    environment:
+      - MONGO_INITDB_DATABASE=app
+
+  nestproject-mongo-ui:
+    image: mongo-express:0.54.0
+    container_name: nestproject-mongo-ui
+    restart: always
+    ports:
+      - '9090:8081'
+    environment:
+      ME_CONFIG_MONGODB_SERVER: nestproject-mongo
+    tty: true
